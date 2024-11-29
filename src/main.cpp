@@ -4,7 +4,6 @@
 #include <string>
 
 int main(int argc, char *argv[]) {
-  // 检查参数数量（程序名 + 两个参数 = 3）
   if (argc != 3) {
     std::cerr << "Usage: " << argv[0] << " <string1> <string2>" << std::endl;
     return 1;
