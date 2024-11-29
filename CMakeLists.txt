@@ -7,10 +7,13 @@ endif()
 
 project(AMCAXStepIO)
 
+set(JSON_PATH ./3rd/Json)
+
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(./include)
+include_directories(${JSON_PATH})
 
 set(AMCAX_ROOT_PATH ./3rd/AMCAXKernel_Release)
 include_directories(${AMCAX_ROOT_PATH}/include)
