@@ -1,10 +1,12 @@
 #include "io.h"
+#include "common/Precision.hpp"
 #include <common/Array2.hpp>
 #include <common/PointT.hpp>
 #include <filesystem>
 #include <geometry/Geom3BSplineSurface.hpp>
 #include <iostream>
 #include <limits>
+#include <modeling/MakeFace.hpp>
 #include <nlohmann/json.hpp>
 #include <step/StepWriter.hpp>
 #include <topology/TopoShape.hpp>
@@ -165,10 +167,14 @@ const bool toStepFile(const std::string &json_file_path,
 
   auto bspSrf = std::make_shared<AMCAX::Geom3BSplineSurface>(
       poles, uKnots, vKnots, uMults, vMults, degree_u, degree_v);
-  std::cout << *bspSrf << std::endl;
+  if (!bspSrf) {
+    std::cerr << "[ERROR][io::toStepFile]" << std::endl;
+    std::cerr << "\t make Geom3BSplineSurface failed!" << std::endl;
 
-  /*
-  AMCAX::TopoShape topo_shape(bspSrf);
+    return false;
+  }
+
+  AMCAX::MakeFace face(bspSrf, AMCAX::Precision::Confusion());
 
   const std::string save_step_folder_path =
       std::filesystem::path(save_step_file_path).parent_path();
@@ -178,9 +184,8 @@ const bool toStepFile(const std::string &json_file_path,
 
   AMCAX::STEP::StepWriter step_writer(save_step_file_path);
   step_writer.Init();
-  step_writer.WriteShape(topo_shape);
+  step_writer.WriteShape(face.Shape());
   step_writer.Done();
-  */
 
   return true;
 }
