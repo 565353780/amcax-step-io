@@ -5,7 +5,7 @@
 
 int main() {
   const std::string json_folder_path = "../bspline-fitting/output/";
-  const std::string save_step_folder_path = "./output/";
+  const std::string save_step_folder_path = "../bspline-fitting/output/";
   const bool overwrite = true;
 
   for (const auto &entry :
