@@ -1,8 +1,52 @@
 #include "io.h"
+#include <common/Array2.hpp>
+#include <common/PointT.hpp>
 #include <filesystem>
+#include <geometry/Geom3BSplineSurface.hpp>
 #include <iostream>
+#include <limits>
 #include <nlohmann/json.hpp>
 #include <step/StepWriter.hpp>
+#include <topology/TopoShape.hpp>
+
+const bool toUniqueKnotsAndMults(const std::vector<float> &knotvector,
+                                 std::vector<double> &Knots,
+                                 std::vector<int> &Mults) {
+  if (knotvector.empty()) {
+    std::cerr << "[ERROR][io::toUniqueKnotsAndMults]" << std::endl;
+    std::cerr << "\t knotvector is empty!" << std::endl;
+
+    return false;
+  }
+
+  Knots.clear();
+  Mults.clear();
+
+  int current_knot_repeat_num = 1;
+  float last_knot_value = std::numeric_limits<float>().min();
+  for (int i = 0; i < knotvector.size(); ++i) {
+    const float current_knot_value = knotvector[i];
+
+    if (current_knot_value == last_knot_value) {
+      ++current_knot_repeat_num;
+
+      continue;
+    }
+
+    if (last_knot_value != std::numeric_limits<float>().min()) {
+      Knots.emplace_back(double(last_knot_value));
+      Mults.push_back(current_knot_repeat_num);
+    }
+
+    last_knot_value = current_knot_value;
+    current_knot_repeat_num = 1;
+  }
+
+  Knots.emplace_back(double(last_knot_value));
+  Mults.push_back(current_knot_repeat_num);
+
+  return true;
+}
 
 const bool toStepFile(const std::string &json_file_path,
                       const std::string &save_step_file_path,
@@ -100,6 +144,32 @@ const bool toStepFile(const std::string &json_file_path,
     return false;
   }
 
+  std::vector<double> uKnots, vKnots;
+  std::vector<int> uMults, vMults;
+  toUniqueKnotsAndMults(sigmoid_knotvector_u, uKnots, uMults);
+  toUniqueKnotsAndMults(sigmoid_knotvector_v, vKnots, vMults);
+
+  AMCAX::Array2<AMCAX::Point3> poles(size_u - 1, size_v - 1);
+  for (int i = 0; i < size_u - 1; ++i) {
+    const int j_start_idx = i * (size_v - 1);
+    for (int j = 0; j < size_v - 1; ++j) {
+      const int start_idx = j_start_idx + j;
+
+      const float x = ctrlpts[3 * start_idx];
+      const float y = ctrlpts[3 * start_idx + 1];
+      const float z = ctrlpts[3 * start_idx + 2];
+
+      poles(i, j) = AMCAX::Point3(x, y, z);
+    }
+  }
+
+  auto bspSrf = std::make_shared<AMCAX::Geom3BSplineSurface>(
+      poles, uKnots, vKnots, uMults, vMults, degree_u, degree_v);
+  std::cout << *bspSrf << std::endl;
+
+  /*
+  AMCAX::TopoShape topo_shape(bspSrf);
+
   const std::string save_step_folder_path =
       std::filesystem::path(save_step_file_path).parent_path();
   if (!std::filesystem::exists(save_step_folder_path)) {
@@ -108,6 +178,9 @@ const bool toStepFile(const std::string &json_file_path,
 
   AMCAX::STEP::StepWriter step_writer(save_step_file_path);
   step_writer.Init();
+  step_writer.WriteShape(topo_shape);
+  step_writer.Done();
+  */
 
   return true;
 }
