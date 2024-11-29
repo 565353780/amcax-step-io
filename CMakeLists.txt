@@ -5,7 +5,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS "/std:c++17 /O0")
 endif()
 
-project(AMCAXTrans)
+project(AMCAXStepIO)
 
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
