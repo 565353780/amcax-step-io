@@ -3,9 +3,17 @@
 #include <iostream>
 #include <string>
 
-int main() {
-  const std::string json_folder_path = "../bspline-fitting/output/";
-  const std::string save_step_folder_path = "../bspline-fitting/output/";
+int main(int argc, char *argv[]) {
+  // 检查参数数量（程序名 + 两个参数 = 3）
+  if (argc != 3) {
+    std::cerr << "Usage: " << argv[0] << " <string1> <string2>" << std::endl;
+    return 1;
+  }
+
+  // const std::string json_folder_path = "../bspline-fitting/output/";
+  // const std::string save_step_folder_path = "../bspline-fitting/output/";
+  const std::string json_folder_path = argv[1];
+  const std::string save_step_folder_path = argv[2];
   const bool overwrite = true;
 
   for (const auto &entry :
