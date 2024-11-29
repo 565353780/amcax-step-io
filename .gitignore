@@ -1,5 +1,9 @@
 # compiled
 build
+.cache
+
+# output
+output
 
 # lib
 AMCAXKernel_Release
